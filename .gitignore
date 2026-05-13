@@ -1,0 +1,47 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# ===== Virtual environment =====
+tfenv/
+venv/
+env/
+ENV/
+.venv/
+
+# ===== IDE / Editor =====
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ===== Model files (large binaries) =====
+# โมเดลใหญ่เกิน 100MB ของ GitHub โหลดเองด้วย train.py / train_baseline.py
+*.h5
+*.keras
+*.tflite
+*.pb
+*.ckpt
+*.pkl
+
+# ===== Dataset / Data files =====
+dataset/
+data/
+# class_names.npy ต้องคงไว้ใน repo (ใช้ใน server.py mapping label)
+
+
+# ===== Installers =====
+*.exe
+*.msi
+
+# ===== Logs =====
+*.log
+logs/

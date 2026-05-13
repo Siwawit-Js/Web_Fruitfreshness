@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>Fruit Detector</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, sans-serif;
+      background: #111;
+      color: #fff;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      text-align: center;
+      background: #18181b;
+      padding: 30px;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 800px;
+      box-shadow: 0 0 30px rgba(0,0,0,.7);
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    video {
+      width: 600px;
+      max-width: 100%;
+      border-radius: 20px;
+      background: #000;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-size: 28px;
+      font-weight: 700;
+      padding: 10px 20px;
+      border-radius: 12px;
+      display: inline-block;
+      min-width: 260px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>🍎 Fruit Detector (Realtime)</h1>
+
+    <video id="cam" autoplay playsinline></video>
+
+    <h2 id="result">🔍 กำลังโหลดกล้อง...</h2>
+  </div>
+
+  <script>
+    let lastPredict = 0;
+
+    async function start() {
+      const cam = document.getElementById("cam");
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 } });
+      cam.srcObject = stream;
+
+      // เริ่มทำงานอัตโนมัติเมื่อกล้องพร้อม
+      setInterval(capture, 700); // 0.7 วินาทีต่อครั้ง
+    }
+
+    async function capture() {
+      const video = document.getElementById("cam");
+      const resultEl = document.getElementById("result");
+
+      const canvas = document.createElement("canvas");
+      canvas.width = 224;
+      canvas.height = 224;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(video, 0, 0, 224, 224);
+
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/jpeg"));
+
+      let form = new FormData();
+      form.append("file", blob, "frame.jpg");
+
+      try {
+        let res = await fetch("http://127.0.0.1:8000/predict", {
+          method: "POST",
+          body: form,
+        });
+
+        const data = await res.json();
+
+        // 🔥 mapping สี
+        let txt = data.label + " (" + (data.confidence * 100).toFixed(1) + "%)";
+
+        if (data.label.includes("fresh")) {
+          resultEl.style.background = "#16a34a";
+          resultEl.style.color = "#111";
+        }
+        else if (data.label.includes("rotten")) {
+          resultEl.style.background = "#dc2626";
+          resultEl.style.color = "#fff";
+        }
+        else {
+          resultEl.style.background = "#52525b";
+          resultEl.style.color = "#fff";
+        }
+
+        resultEl.innerText = txt;
+
+      } catch (err) {
+        resultEl.style.background = "#52525b";
+        resultEl.innerText = "⚠️ ไม่สามารถติดต่อเซิร์ฟเวอร์ได้";
+      }
+    }
+
+    start();
+  </script>
+
+</body>
+</html>
